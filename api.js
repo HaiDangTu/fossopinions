@@ -18,8 +18,8 @@ app.get('/api/getdescription', (req, res) => {
   else
   {
     AWS.config.update({
-          accessKeyId: 'AKIAZQP24JQWBEEBCM7U',
-          secretAccessKey: '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',
+          accessKeyId: process.env.accessKeyId,
+          secretAccessKey: process.env.secretAccessKey,
           region: 'eu-south-1',
         });
     const docClient = new AWS.DynamoDB.DocumentClient();
