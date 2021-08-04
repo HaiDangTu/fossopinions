@@ -11,10 +11,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 const port = process.env.PORT || 80;
 
-app.get('/api/getdescription', (req, res) => {
-  var id = req.query.id
-  if(id == undefined)
-    res.write("{'error':'id field is undefined'}");
+app.get('/getdescription', (req, res) => {
+  var name = req.query.name
+  if(name == undefined)
+    res.write("{'error':'name field is undefined'}");
   else
   {
     AWS.config.update({
@@ -25,53 +25,56 @@ app.get('/api/getdescription', (req, res) => {
     const docClient = new AWS.DynamoDB.DocumentClient();
 
     const params = {
-          TableName: "TestDynamo"
+          TableName: "TestDynamo",
+          Key:{
+              "name": name
+          }
     };
-    docClient.scan(params, function (err, data) {
-
+    docClient.get(params, function(err, data) {
         if (err) {
-            console.log(err)
-            res.send({
-                success: false,
-                message: err
-            });
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
         } else {
-            const { Items } = data;
-            res.send({
-                success: true,
-                movies: Items
-            });
+            console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+            res.write(JSON.stringify(data, null, 2));
+
         }
     });
-    res.write(val);
 
   }
   res.end();
 });
-app.post('/sd', (req, res) => {
+app.post('/setdescription', (req, res) => {
+
+  if(req.body.key != "ejgiwiwwngnj332nfsjfn2542fj")
+  {
+    res.send("API KEY INCORRECT !");
+    return;
+  }
 
   console.log("called");
+  console.log(process.env.accessKeyId)
+  console.log(process.env.secretAccessKey)
   console.log(req.body);
     AWS.config.update({
-          accessKeyId: 'AKIAZQP24JQWBEEBCM7U',
-          secretAccessKey: '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',
+          accessKeyId: process.env.accessKeyId,
+          secretAccessKey: process.env.secretAccessKey,
           region: 'eu-south-1',
         });
     const docClient = new AWS.DynamoDB.DocumentClient();
 
-    let id = req.body.id;
+    let name = decodeURIComponent(req.body.name)
     let description = decodeURIComponent(req.body.description)
     console.log(description)
-    if(id == undefined)
+    if(name == undefined)
     {
-      console.log("ID UNDEFINED");
-      let id = crypto.randomBytes(16).toString("hex");
+      //console.log("ID UNDEFINED");
+      //let id = crypto.randomBytes(16).toString("hex");
 
       var params =
       {
         TableName: "TestDynamo",
         Item: {
-          "id":id,
+          "name":name,
           "description":description
 
         }
@@ -79,13 +82,12 @@ app.post('/sd', (req, res) => {
     }
     else
     {
-      console.log("ID: "+id);
 
       var params =
       {
         TableName: "TestDynamo",
         Item: {
-          "id":id,
+          "name":name,
           "description":description
         }
       };
@@ -95,8 +97,11 @@ app.post('/sd', (req, res) => {
 
   docClient.put(params, function(err, data) {
     if (err) {
+      console.log("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+
         res.write("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
     } else {
+        console.log("Added item:", JSON.stringify(data, null, 2))
         res.write("Added item:", JSON.stringify(data, null, 2));
     }
 });
