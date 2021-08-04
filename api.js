@@ -38,10 +38,11 @@ app.get('/getdescription', (req, res) => {
             res.write(JSON.stringify(data, null, 2));
 
         }
+        res.end();
     });
 
   }
-  res.end();
+
 });
 app.post('/setdescription', (req, res) => {
 
@@ -104,10 +105,11 @@ app.post('/setdescription', (req, res) => {
         console.log("Added item:", JSON.stringify(data, null, 2))
         res.write("Added item:", JSON.stringify(data, null, 2));
     }
+    res.end();
 });
 
 
-  res.end();
+
 });
 
 app.get('/', (req, resp) => {
